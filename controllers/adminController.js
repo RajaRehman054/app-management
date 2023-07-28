@@ -331,7 +331,7 @@ exports.addInvoice = asyncHandler(async (req, res) => {
 
 exports.getSingleInvoice = asyncHandler(async (req, res) => {
 	const invoice = await Invoice.findById(req.params.id).populate('team user');
-	res.status(200).json({ invoice }).populate('team user');
+	res.status(200).json({ invoice });
 });
 
 exports.getAllInvoices = asyncHandler(async (req, res) => {
@@ -398,6 +398,99 @@ exports.editTeam = asyncHandler(async (req, res) => {
 exports.deleteTeam = asyncHandler(async (req, res) => {
 	await Team.findByIdAndDelete(req.params.id);
 	res.status(202).json({ message: 'Successfully Deleted' });
+});
+
+exports.findTeams = asyncHandler(async (req, res) => {
+	const teams = await Team.find({ user: req.params.id });
+	res.status(202).json({ teams });
+});
+
+exports.findVendors = asyncHandler(async (req, res) => {
+	const vendors = await Vendor.find({ user: req.params.id });
+	res.status(202).json({ vendors });
+});
+
+exports.findPackages = asyncHandler(async (req, res) => {
+	const packages = await Package.find({ user: req.params.id });
+	res.status(202).json({ packages });
+});
+
+exports.findCategories = asyncHandler(async (req, res) => {
+	const categories = await Category.find({ user: req.params.id });
+	res.status(202).json({ categories });
+});
+
+exports.addUser = asyncHandler(async (req, res, next) => {
+	try {
+		const user = await User.register(
+			new User({
+				email: req.body.email,
+			}),
+			req.body.password
+		);
+		if (user) {
+			try {
+				await user.save();
+				passport.authenticate('local')(req, res, () => {
+					res.status(201).json({
+						success: true,
+						status: 'User Added',
+					});
+				});
+			} catch (error) {
+				return next(error);
+			}
+		}
+	} catch (error) {
+		return next(error);
+	}
+});
+
+exports.getSingleUser = asyncHandler(async (req, res) => {
+	const user = await User.findById(req.params.id);
+	res.status(200).json({ user });
+});
+
+exports.getAllUsers = asyncHandler(async (req, res) => {
+	const page = parseInt(req.query.page) || 1;
+	const perPage = 10;
+	const totalItems = await User.countDocuments();
+	const totalPages = Math.ceil(totalItems / perPage);
+	const users = await User.find({})
+		.skip((page - 1) * perPage)
+		.limit(perPage);
+	res.status(200).json({
+		users,
+		totalItems: totalItems,
+		currentPage: page,
+		perPage: perPage,
+		totalPages: totalPages,
+	});
+});
+
+exports.editUser = asyncHandler(async (req, res) => {
+	const user = await User.findOne({ email: req.body.email });
+	if (user && user.id !== req.params.id) {
+		return res.status(409).json({
+			message: 'Email already associated with a user.',
+		});
+	}
+	await User.findByIdAndUpdate(req.params.id, req.body);
+	res.status(200).json({ message: 'Successfully Edited' });
+});
+
+exports.deleteUser = asyncHandler(async (req, res) => {
+	Member.deleteMany({ user: req.params.id });
+	Energy.deleteMany({ user: req.params.id });
+	Package.deleteMany({ user: req.params.id });
+	PettyCash.deleteMany({ user: req.params.id });
+	Team.deleteMany({ user: req.params.id });
+	Expense.deleteMany({ user: req.params.id });
+	Vendor.deleteMany({ user: req.params.id });
+	Invoice.deleteMany({ user: req.params.id });
+	Category.deleteMany({ user: req.params.id });
+	await User.findByIdAndDelete(req.params.id);
+	res.status(202).json({ message: 'User Deleted' });
 });
 
 exports.getTotalCash = asyncHandler(async (req, res) => {
@@ -582,7 +675,7 @@ exports.getEnergyGraph = asyncHandler(async (req, res) => {
 			},
 		},
 		{
-			$sort: { date: 1 }, // Sort the documents by date in ascending order
+			$sort: { date: 1 },
 		},
 		{
 			$group: {
@@ -591,11 +684,11 @@ exports.getEnergyGraph = asyncHandler(async (req, res) => {
 					month: { $month: '$date' },
 					day: { $dayOfMonth: '$date' },
 				},
-				firstReading: { $first: '$reading' }, // Reading of the first document of the day
+				firstReading: { $first: '$reading' },
 			},
 		},
 		{
-			$sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 }, // Sort by date in ascending order
+			$sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 },
 		},
 	]);
 	var finalData = [];

@@ -212,6 +212,7 @@ router.delete(
 	adminController.deleteInvoice
 );
 
+//TODO: teams
 router.get(
 	'/team/single/:id',
 	authenticate.verifyAdmin,
@@ -255,6 +256,47 @@ router.get(
 	'/energy/graph',
 	authenticate.verifyAdmin,
 	adminController.getEnergyGraph
+);
+
+// TODO: helpers
+router.get(
+	'/helper/packages/:id',
+	authenticate.verifyAdmin,
+	adminController.findPackages
+);
+router.get(
+	'/helper/vendors/:id',
+	authenticate.verifyAdmin,
+	adminController.findVendors
+);
+router.get(
+	'/helper/teams/:id',
+	authenticate.verifyAdmin,
+	adminController.findTeams
+);
+router.get(
+	'/helper/categories/:id',
+	authenticate.verifyAdmin,
+	adminController.findCategories
+);
+
+//TODO: user
+router.get(
+	'/user/single/:id',
+	authenticate.verifyAdmin,
+	adminController.getSingleUser
+);
+router.get('/user/all', authenticate.verifyAdmin, adminController.getAllUsers);
+router.post('/user/add', authenticate.verifyAdmin, adminController.addUser);
+router.patch(
+	'/user/edit/:id',
+	authenticate.verifyAdmin,
+	adminController.editUser
+);
+router.delete(
+	'/user/delete/:id',
+	authenticate.verifyAdmin,
+	adminController.deleteUser
 );
 
 module.exports = router;
