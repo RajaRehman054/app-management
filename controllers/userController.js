@@ -14,7 +14,6 @@ var Member = require('../models/members');
 var Team = require('../models/teams');
 var Invoice = require('../models/invoice');
 var Expense = require('../models/expenses');
-const pettyCash = require('../models/pettyCash');
 
 exports.register = async (req, res, next) => {
 	var exists = await User.findOne({
