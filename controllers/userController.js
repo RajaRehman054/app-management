@@ -59,15 +59,6 @@ exports.signIn = asyncHandler(async (req, res) => {
 	});
 });
 
-exports.signIn = asyncHandler(async (req, res) => {
-	let token = authenticate.getToken({ _id: req.user._id });
-	res.status(200).json({
-		success: true,
-		token: token,
-		user: req.user._id,
-	});
-});
-
 exports.addCategory = asyncHandler(async (req, res) => {
 	await Category.create({ ...req.body, user: req.user._id });
 	res.status(201).json({ success: true, message: 'Category Added' });
@@ -228,6 +219,18 @@ exports.getAllMembers = asyncHandler(async (req, res) => {
 	res.status(200).json({ members });
 });
 
+exports.getMembersByTeam = asyncHandler(async (req, res) => {
+	const members = await Member.find({
+		user: req.user._id,
+		team: req.params.id,
+	}).populate('package');
+	var total = 0;
+	for (let index = 0; index < members.length; index++) {
+		total += members[index].package.price;
+	}
+	res.status(200).json({ member: members.length, rate: total });
+});
+
 exports.editMember = asyncHandler(async (req, res) => {
 	await Member.findByIdAndUpdate(req.params.id, {
 		...req.body,
@@ -276,14 +279,13 @@ exports.addInvoice = asyncHandler(async (req, res) => {
 
 exports.getSingleInvoice = asyncHandler(async (req, res) => {
 	const invoice = await Invoice.findById(req.params.id).populate('team');
-	res.status(200).json({ invoice }).populate('team');
+	res.status(200).json({ invoice });
 });
 
 exports.getAllInvoices = asyncHandler(async (req, res) => {
 	const invoices = await Invoice.find({ user: req.user._id }).populate(
 		'team'
 	);
-
 	res.status(200).json({ invoices });
 });
 
