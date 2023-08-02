@@ -46,6 +46,11 @@ router.get(
 	adminController.getSingleMember
 );
 router.get(
+	'/member/team',
+	authenticate.verifyAdmin,
+	adminController.getMembersByTeam
+);
+router.get(
 	'/member/all',
 	authenticate.verifyAdmin,
 	adminController.getAllMembers

@@ -92,6 +92,18 @@ exports.deleteExpense = asyncHandler(async (req, res) => {
 	res.status(202).json({ message: 'Successfully Deleted' });
 });
 
+exports.getMembersByTeam = asyncHandler(async (req, res) => {
+	const members = await Member.find({
+		user: req.body.u_id,
+		team: req.body.t_id,
+	}).populate('package');
+	var total = 0;
+	for (let index = 0; index < members.length; index++) {
+		total += members[index].package.price;
+	}
+	res.status(200).json({ member: members.length, rate: total });
+});
+
 exports.addMember = asyncHandler(async (req, res) => {
 	await Member.create(req.body);
 	res.status(201).json({ success: true, message: 'Member Added' });
